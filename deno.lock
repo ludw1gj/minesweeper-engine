@@ -1,0 +1,29 @@
+{
+  "version": "2",
+  "remote": {
+    "https://deno.land/std@0.121.0/fmt/colors.ts": "8368ddf2d48dfe413ffd04cdbb7ae6a1009cf0dccc9c7ff1d76259d9c61a0621",
+    "https://deno.land/std@0.121.0/testing/_diff.ts": "e6a10d2aca8d6c27a9c5b8a2dbbf64353874730af539707b5b39d4128140642d",
+    "https://deno.land/std@0.121.0/testing/asserts.ts": "3ef8c26b2a1e8e71c8a39279ab98e5743d1131a719b13828c6cd8e29f211ddaa",
+    "https://deno.land/std@0.192.0/testing/_test_suite.ts": "30f018feeb3835f12ab198d8a518f9089b1bcb2e8c838a8b615ab10d5005465c",
+    "https://deno.land/std@0.192.0/testing/bdd.ts": "59f7f7503066d66a12e50ace81bfffae5b735b6be1208f5684b630ae6b4de1d0",
+    "https://deno.land/std@v0.192.0/fmt/colors.ts": "d67e3cd9f472535241a8e410d33423980bec45047e343577554d3356e1f0ef4e",
+    "https://esm.sh/*@preact/signals-core@1.0.1": "7e9f2e969b6f6f80afcfbadee85d0ccf53659d978c0cd2f4c75bb719186b85d9",
+    "https://esm.sh/*@preact/signals@1.0.3": "4073e34761297bc6b1662e2baf2f575dd4e974077ce2cb7c17251122a3fd3b6f",
+    "https://esm.sh/@preact/signals@1.1.3": "22e7223ef615a55e9b0511bf7f1e10a26b3b88e328ffc8bff4ca9eba66d38cd2",
+    "https://esm.sh/preact@10.10.6": "e0975e4b47b8b35d0e1047f24b7fcd42e8bc659e7cdd9fbf2bf98b9ef08bfe8a",
+    "https://esm.sh/preact@10.10.6/hooks": "9872116fd29a1c0b43ef50b12c9078498e22c903b61d2d87e9210caa2216afba",
+    "https://esm.sh/stable/preact@10.10.6/denonext/hooks.js": "1ba677a2dc844a931452bb9eb82a0435235dc01d17053790f2f44898d5bd066d",
+    "https://esm.sh/stable/preact@10.10.6/denonext/preact.mjs": "2b22ffd6b1eea70eee4b394797de9dded525a43c99e5f2920d6f3e48b24d0165",
+    "https://esm.sh/stable/preact@10.15.1/denonext/hooks.js": "5c989ad368cf4f2cb3a5d7d1801843d9348c599fe3e7731d04728f7b845d724e",
+    "https://esm.sh/stable/preact@10.15.1/denonext/preact.mjs": "30710ac1d5ff3711ae0c04eddbeb706f34f82d97489f61aaf09897bc75d2a628",
+    "https://esm.sh/v118/preact@10.10.6/hooks/src/index.d.ts": "272fdead5f29c6ad17b8332588a1652fc5bbefb97b5f29d931c55342f4b024f9",
+    "https://esm.sh/v118/preact@10.10.6/src/index.d.ts": "d3e2e5125321d592d2458226f311de66411f2fa949e546cbaaefa533c4fb89e3",
+    "https://esm.sh/v118/preact@10.10.6/src/jsx.d.ts": "1bb7de31d64cc39b3b07613dc39bff42199ffec4b97ac9168a86f4747a3ec669",
+    "https://esm.sh/v126/@preact/signals-core@1.0.1/X-ZS8q/denonext/signals-core.mjs": "87d32b7ba224d7061ba8477c745a2fde80eb51fe8e61d4c304a64b60d67e55aa",
+    "https://esm.sh/v126/@preact/signals-core@1.0.1/X-ZS8q/dist/signals-core.d.ts": "7a2bc0ea4bb4197fe888236017e1429cb3129ca64eb37146f11f102d9513c54d",
+    "https://esm.sh/v126/@preact/signals-core@1.3.0/denonext/signals-core.mjs": "25816da53d4a5c50cbc4afd6c3ff7f12c631eb4c8613364f4aab2654ee7298f2",
+    "https://esm.sh/v126/@preact/signals@1.0.3/X-ZS8q/denonext/signals.mjs": "ef6a7bc71971b9224cf7a30d9e501d98ec49f5b8807d3b28b0529b14acb39166",
+    "https://esm.sh/v126/@preact/signals@1.0.3/X-ZS8q/dist/signals.d.ts": "f4fbae092f6622b348cc45503aef1a2076ea0c4bf37ab78a691a77220217a027",
+    "https://esm.sh/v126/@preact/signals@1.1.3/denonext/signals.mjs": "bc5c6a159c7d99ffa7f66cd6548e2c7bc56364949f0843099d6fc23af7ab74e0"
+  }
+}
