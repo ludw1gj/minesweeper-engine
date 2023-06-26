@@ -86,18 +86,22 @@ export function initiateGrid(
     randSeed
   );
 
-  const createCellAtCoordinate = (coordinate: Coordinate): Cell =>
-    mineCoordinates.some((mineCoordinate) =>
+  const createCellAtCoordinate = (
+    coordinate: Coordinate,
+    flagged: boolean
+  ): Cell => ({
+    status: flagged ? "flagged" : "hidden",
+    mineCount: mineCoordinates.some((mineCoordinate) =>
       areCoordinatesEqual(mineCoordinate, coordinate)
     )
-      ? { status: "hidden", mineCount: -1 }
-      : {
-          status: "hidden",
-          mineCount: countAdjacentMines(mineCoordinates, coordinate),
-        };
+      ? -1
+      : countAdjacentMines(mineCoordinates, coordinate),
+  });
 
   const newGrid = grid.map((row, y) =>
-    row.map((_, x) => createCellAtCoordinate({ x, y }))
+    row.map((cell, x) =>
+      createCellAtCoordinate({ x, y }, cell.status === "flagged")
+    )
   );
   const cell = newGrid[firstCoordinate.y][firstCoordinate.x];
   if (cell.mineCount === -1) {
@@ -150,15 +154,13 @@ export function isWinGrid(grid: Grid): boolean {
 /** Count amount flagged. */
 export function countCells(grid: Grid): {
   /** Amount of revealed and detonated cells. */
-  numVisible: number;
-  /** Amount flagged cells. */
-  numFlagged: number;
-  /** Amount of remaining flags. */
+  visible: number;
+  flagged: number;
   remainingFlags: number;
-  /** Total amount cells. */
-  numTotal: number;
+  detonated: number;
+  total: number;
 } {
-  const { flagged, mines, visible, total } = grid
+  const { flagged, mines, visible, detonated, total } = grid
     .flatMap((row) => row)
     .reduce(
       (count, cell) => ({
@@ -168,15 +170,18 @@ export function countCells(grid: Grid): {
             : count.visible,
         flagged: cell.status === "flagged" ? count.flagged + 1 : count.flagged,
         mines: cell.mineCount === -1 ? count.mines + 1 : count.mines,
+        detonated:
+          cell.status === "detonated" ? count.detonated + 1 : count.detonated,
         total: count.total + 1,
       }),
-      { visible: 0, flagged: 0, mines: 0, total: 0 }
+      { visible: 0, flagged: 0, mines: 0, detonated: 0, total: 0 }
     );
   return {
-    numVisible: visible,
-    numFlagged: flagged,
+    visible,
+    flagged,
     remainingFlags: mines - flagged,
-    numTotal: total,
+    detonated,
+    total,
   };
 }
 

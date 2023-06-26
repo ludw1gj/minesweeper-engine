@@ -373,15 +373,6 @@ describe("toggle flag", () => {
     assertEquals(engine.gameState.value.numRemainingFlags, 2);
   });
 
-  it("cell should not be flagged if game is not running status", () => {
-    const { gameState, startGame, toggleFlag } = createMinesweeperEngine();
-    startGame(createDifficultyLevel(3, 3, 3), 6);
-    toggleFlag(createCoordinate(2, 2));
-
-    assertEquals(gameState.value.grid[2][2].status, "hidden");
-    assertEquals(gameState.value.status, "ready");
-  });
-
   it("cell should be toggled correctly", () => {
     engine.toggleFlag(createCoordinate(2, 2));
     assertEquals(engine.gameState.value.grid[2][2].status, "flagged");

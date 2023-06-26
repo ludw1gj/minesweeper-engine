@@ -2,8 +2,6 @@
 export type MinesweeperInternal = Readonly<{
   /** The difficulty of the game. */
   difficulty: Difficulty;
-  /** The current status of the game. */
-  status: GameStatus;
   /** The game grid. */
   grid: Grid;
   /** The previously saved grid state. */
@@ -20,6 +18,8 @@ export type Minesweeper = MinesweeperInternal & {
   numRemainingFlags: number;
   /** The number of revealed and detonated cells. */
   numVisibleCells: number;
+  /** The current status of the game. */
+  status: GameStatus;
 };
 
 /** The status of a cell. */

@@ -7,7 +7,32 @@ import {
   setLoseState,
   toggleFlagInGrid,
 } from "./grid.ts";
-import { Difficulty, Coordinate, MinesweeperInternal } from "./types.ts";
+import {
+  Difficulty,
+  Coordinate,
+  MinesweeperInternal,
+  GameStatus,
+} from "./types.ts";
+
+export const getGameStatus = (
+  cellsTotal: number,
+  cellsVisible: number,
+  cellsDetonated: number
+): GameStatus => {
+  if (cellsTotal === 0) {
+    return "waiting";
+  }
+  if (cellsVisible === 0) {
+    return "ready";
+  }
+  if (cellsDetonated > 0) {
+    return "loss";
+  }
+  if (cellsTotal === cellsVisible) {
+    return "win";
+  }
+  return "running";
+};
 
 /** Create a minesweeper game. Game board isn't generated until first move */
 export function startGame(
@@ -15,7 +40,6 @@ export function startGame(
   randSeed: number
 ): MinesweeperInternal {
   return {
-    status: "ready",
     difficulty,
     grid: createInitialGrid(difficulty.height, difficulty.width),
     randSeed,
@@ -25,10 +49,11 @@ export function startGame(
 /** Make cell revealed at the given coordinate. */
 export function revealCell(
   game: MinesweeperInternal,
-  coordinate: Coordinate
+  coordinate: Coordinate,
+  status: GameStatus
 ): MinesweeperInternal {
-  if (game.status === "ready") {
-    // Note: timer starts here and when game status changes from Running it will stop.
+  const firstMove = status === "ready";
+  if (firstMove) {
     return {
       ...game,
       grid: initiateGrid(
@@ -37,10 +62,9 @@ export function revealCell(
         coordinate,
         game.randSeed!
       ),
-      status: "running",
     };
   }
-  if (game.status !== "running") {
+  if (status !== "running") {
     return game;
   }
 
@@ -54,7 +78,6 @@ export function revealCell(
       ...game,
       grid: setLoseState(game.grid, coordinate),
       savedGridState: game.grid,
-      status: "loss",
     };
   }
 
@@ -63,7 +86,6 @@ export function revealCell(
     return {
       ...game,
       grid: revealAllCells(game.grid),
-      status: "win",
     };
   }
   return { ...game, grid };
@@ -75,7 +97,7 @@ export function toggleFlag(
   coordinate: Coordinate
 ): MinesweeperInternal {
   const cell = game.grid[coordinate.y][coordinate.x];
-  if (game.status !== "running" || cell.status === "revealed") {
+  if (cell.status === "revealed") {
     return game;
   }
   return {
@@ -84,21 +106,13 @@ export function toggleFlag(
   };
 }
 
-/** Load the previous state before the game had been lost. */
-export function undoLoosingMove(
-  game: MinesweeperInternal
-): MinesweeperInternal {
-  if (game.status !== "loss" || !game.savedGridState) {
-    console.warn(
-      `incorrect state of GameStatus: ${
-        game.status
-      }, GameStatus must be ${"loss"}`
-    );
+/** Load the previous state. */
+export function undoMove(game: MinesweeperInternal): MinesweeperInternal {
+  if (!game.savedGridState) {
     return game;
   }
   return {
     ...game,
     grid: game.savedGridState.map((row) => row.map((cell) => cell)),
-    status: "running",
   };
 }
