@@ -1,4 +1,12 @@
 {
+  "lint": {
+    "include": ["src/"]
+  },
+  "fmt": {
+    "lineWidth": 80,
+    "semiColons": false,
+    "singleQuote": true
+  },
   "imports": {
     "preact": "https://esm.sh/preact@10.10.6",
     "preact/": "https://esm.sh/preact@10.10.6/",
