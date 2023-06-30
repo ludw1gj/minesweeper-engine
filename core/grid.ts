@@ -11,7 +11,8 @@ const adjacentCellIndexDeltas: ReadonlyArray<Coordinate> = [-1, 0, 1]
   .flatMap((y) => [-1, 0, 1].map((x) => ({ x, y })))
   .filter(({ x, y }) => !(x === 0 && y === 0))
 
-/** Fill the grid with mine and water cells. A seed coordinate is needed as the first cell
+/**
+ * Fill the grid with mine and water cells. A seed coordinate is needed as the first cell
  * clicked should be a water cell with a mine count of 0. Returns new minesweeper grid instance.
  */
 export function fillGrid(
@@ -70,7 +71,8 @@ export function revealCellInGrid(grid: Grid, atCoordinate: Coordinate): Grid {
   )
 }
 
-/** Generate coordinates to place mine cells on a grid. The seed coordinate must be a water cell
+/**
+ * Generate coordinates to place mine cells on a grid. The seed coordinate must be a water cell
  * with an adjacent mines count of 0, and therefore must not be a mine cell.
  */
 function generateRandonMineCoordinates(
