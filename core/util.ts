@@ -7,24 +7,18 @@ import {
 } from '../core/types.ts'
 
 /** Default difficulty levels. */
-export const difficulties: { [key: string]: Difficulty } = {
+export const difficulties = {
   easy: { height: 9, width: 9, numMines: 10 },
   medium: { height: 16, width: 16, numMines: 40 },
   hard: { height: 30, width: 16, numMines: 99 },
 }
 
 /** Create a difficulty level for a minesweeper game. */
-export const createDifficultyLevel = (
+export function createDifficultyLevel(
   height: number,
   width: number,
   numMines: number,
-): Difficulty => {
-  if (!arePositiveIntegers(height, width, numMines)) {
-    console.warn(
-      `height, width, and numMines must be positive whole numbers, height: ${height}, width: ${width}, numMines: ${numMines}. Defaulting to easy config.`,
-    )
-    return difficulties.easy
-  }
+): Difficulty {
   return {
     height,
     width,
@@ -33,24 +27,24 @@ export const createDifficultyLevel = (
 }
 
 /** Create a coordinate. */
-export const createCoordinate = (x: number, y: number): Coordinate => ({
-  x,
-  y,
-})
+export function createCoordinate(x: number, y: number): Coordinate {
+  return ({
+    x,
+    y,
+  })
+}
 
 /** Create a string representation of the grid. */
-export const getStringifiedGrid = (
+export function getStringifiedGrid(
   game: Minesweeper,
   showAllCells: boolean,
-): string => gridToString(game.grid, showAllCells)
-
-/** Check if numbers are non negative whole numbers. */
-const arePositiveIntegers = (...n: number[]): boolean =>
-  !n.some((num) => !(num >= 0 && num % 1 === 0))
+): string {
+  return gridToString(game.grid, showAllCells)
+}
 
 /** Generate a string representation of the grid. */
 function gridToString(grid: Grid, showAllCells: boolean): string {
-  const generateLine = (): string => '---'.repeat(grid[0].length || 0) + '\n'
+  const generateLine = (): string => '---'.repeat(grid[0]?.length || 0) + '\n'
 
   const generateCellStr = (cell: Cell): string => {
     if (showAllCells) {

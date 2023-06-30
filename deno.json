@@ -7,6 +7,7 @@
     "semiColons": false,
     "singleQuote": true
   },
+  "compilerOptions": {"noUncheckedIndexedAccess": true},
   "imports": {
     "preact": "https://esm.sh/preact@10.10.6",
     "preact/": "https://esm.sh/preact@10.10.6/",
