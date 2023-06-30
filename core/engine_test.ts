@@ -108,8 +108,6 @@ Deno.test('startGame - start correctly', () => {
   }
 
   assertEquals(engine.gameState.value, desiredState)
-  assertEquals(engine.gameState.value.numRemainingFlags, 1)
-  assertEquals(engine.gameState.value.numFlagged, 0)
 })
 
 Deno.test(
