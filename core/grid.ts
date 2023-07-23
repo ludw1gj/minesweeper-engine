@@ -116,18 +116,40 @@ function placeRandonMines(
   randSeed: number,
   seedCoordinate: Coordinate,
 ): Grid {
-  const mineCoordinates = generateRandomMineCoors(
-    grid,
-    numMines,
-    randSeed,
-    seedCoordinate,
-  );
-  return updateEachCell(
-    grid,
-    (cell, x, y) =>
-      mineCoordinates.find((mineCoor) => mineCoor.x === x && mineCoor.y === y)
+  const randomNumberGenerator = createRandomNumberGenerator(randSeed);
+  const randomCoordinates: Coordinate[] = [];
+  while (randomCoordinates.length !== numMines) {
+    let randCoor: Coordinate | undefined;
+    while (!randCoor) {
+      const gridHeight = grid.length;
+      const gridWidth = grid[0].length;
+      const currRandCoor = {
+        x: Math.floor(randomNumberGenerator() * gridWidth),
+        y: Math.floor(randomNumberGenerator() * gridHeight),
+      };
+      const isSmallGrid = gridHeight < 4 && gridWidth < 4;
+      const minDistance = isSmallGrid ? 1 : 2;
+      const distance = findCoordinateDistance(seedCoordinate, currRandCoor);
+      if (distance < minDistance) {
+        continue;
+      }
+      randCoor = currRandCoor;
+    }
+
+    const unique = !randomCoordinates.find((coor) =>
+      coor.x === randCoor?.x && coor.y === randCoor.y
+    );
+    if (unique) {
+      randomCoordinates.push(randCoor);
+    }
+  }
+
+  return grid.map((row, y) =>
+    row.map((cell, x) =>
+      randomCoordinates.find((coor) => coor.x === x && coor.y === y)
         ? { ...cell, mineCount: -1 }
-        : cell,
+        : cell
+    )
   );
 }
 
@@ -207,55 +229,6 @@ function findNeighborsToReveal(
   }
 
   return neighborCoorsToReveal;
-}
-
-function generateRandomMineCoor(
-  grid: Grid,
-  seedCoordinate: Coordinate,
-  randomNumberGenerator: RandomNumberGenerator,
-): Coordinate {
-  let coordinate: Coordinate | undefined;
-  while (!coordinate) {
-    const gridHeight = grid.length;
-    const gridWidth = grid[0].length;
-    const randCoor = {
-      x: Math.floor(randomNumberGenerator() * gridWidth),
-      y: Math.floor(randomNumberGenerator() * gridHeight),
-    };
-    const isSmallGrid = gridHeight < 4 && gridWidth < 4;
-    const minDistance = isSmallGrid ? 1 : 2;
-    const distance = findCoordinateDistance(seedCoordinate, randCoor);
-    if (distance < minDistance) {
-      continue;
-    }
-    coordinate = randCoor;
-  }
-  return coordinate;
-}
-
-function generateRandomMineCoors(
-  grid: Grid,
-  numMines: number,
-  randSeed: number,
-  seedCoordinate: Coordinate,
-): Coordinate[] {
-  const randomNumberGenerator = createRandomNumberGenerator(randSeed);
-  const randomCoordinates: Coordinate[] = [];
-  while (randomCoordinates.length !== numMines) {
-    const randCoor = generateRandomMineCoor(
-      grid,
-      seedCoordinate,
-      randomNumberGenerator,
-    );
-    const exists = randomCoordinates.find((coor) =>
-      coor.x === randCoor.x && coor.y === randCoor.y
-    );
-    if (exists) {
-      continue;
-    }
-    randomCoordinates.push(randCoor);
-  }
-  return randomCoordinates;
 }
 
 function getCell(grid: Grid, { y, x }: Coordinate) {
