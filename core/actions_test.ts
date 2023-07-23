@@ -5,7 +5,7 @@ import {
 } from "https://deno.land/std@0.121.0/testing/asserts.ts";
 import { createMinsweeperState } from "./state.ts";
 import { Minesweeper } from "./types.ts";
-import { createCoordinate, createDifficultyLevel } from "./util.ts";
+import { createDifficultyLevel, createPoint } from "./util.ts";
 import {
   loadGame,
   revealCell,
@@ -169,7 +169,7 @@ Deno.test("loadGame - successfully load previous game", () => {
 Deno.test("revealCell - do nothing if game is not running", () => {
   const { state, game } = createMinsweeperState();
   const prevState = state.value;
-  revealCell(state, game.value.status, createCoordinate(2, 2));
+  revealCell(state, game.value.status, createPoint(2, 2));
 
   assertEquals(state.value, prevState);
 });
@@ -268,7 +268,7 @@ Deno.test("revealCell - reveal empty adjacent cells", () => {
   const { state, game } = createMinsweeperState();
   startGame(state, createDifficultyLevel(height, width, numMines), 6);
 
-  revealCell(state, game.value.status, createCoordinate(3, 0));
+  revealCell(state, game.value.status, createPoint(3, 0));
   assertEquals(game.value, desiredState);
 });
 
@@ -277,9 +277,9 @@ Deno.test(
   () => {
     const { state, game } = createMinsweeperState();
     startGame(state, createDifficultyLevel(3, 3, 3), 6);
-    revealCell(state, game.value.status, createCoordinate(0, 0));
+    revealCell(state, game.value.status, createPoint(0, 0));
     const firstMoveState = state.value;
-    revealCell(state, game.value.status, createCoordinate(0, 0));
+    revealCell(state, game.value.status, createPoint(0, 0));
     assertStrictEquals(state.value, firstMoveState);
   },
 );
@@ -289,7 +289,7 @@ Deno.test("revealCell - game is lost", () => {
   const gameLoad = finalWaterCellGameState();
   loadGame(state, gameLoad.board, gameLoad.randSeed);
   assertEquals(game.value.board[2][2].mineCount, -1);
-  revealCell(state, game.value.status, createCoordinate(2, 2));
+  revealCell(state, game.value.status, createPoint(2, 2));
 
   assertEquals(game.value.status, "loss");
   assertEquals(game.value.remainingFlags, 0);
@@ -299,11 +299,11 @@ Deno.test("revealCell - game is lost", () => {
 Deno.test("revealCell - flag count when revealing a flagged cell", () => {
   const { state, game } = createMinsweeperState();
   startGame(state, createDifficultyLevel(3, 3, 2), 6);
-  toggleFlag(state, createCoordinate(0, 0));
+  toggleFlag(state, createPoint(0, 0));
   assertEquals(game.value.board.at(0)?.at(0)?.status, "flagged");
   assertEquals(game.value.remainingFlags, 1);
 
-  revealCell(state, game.value.status, createCoordinate(0, 0));
+  revealCell(state, game.value.status, createPoint(0, 0));
   assertEquals(game.value.board.at(0)?.at(0)?.status, "revealed");
   assertEquals(game.value.remainingFlags, 2);
 });
@@ -312,7 +312,7 @@ Deno.test("revealCell - game win", () => {
   const { state, game } = createMinsweeperState();
   const gameLoad = finalWaterCellGameState();
   loadGame(state, gameLoad.board, gameLoad.randSeed);
-  revealCell(state, game.value.status, createCoordinate(0, 2));
+  revealCell(state, game.value.status, createPoint(0, 2));
 
   assertEquals(game.value.status, "win");
   assertEquals(game.value.remainingFlags, 0);
@@ -326,7 +326,7 @@ Deno.test("undoLoosingMove - undo lossing move", () => {
   const { state, game } = createMinsweeperState();
   const gameLoad = finalWaterCellGameState();
   loadGame(state, gameLoad.board, gameLoad.randSeed);
-  revealCell(state, game.value.status, createCoordinate(2, 2));
+  revealCell(state, game.value.status, createPoint(2, 2));
   undoLoosingMove(state);
   assertEquals(game.value.status, "running");
   assertEquals(game.value.board, gameLoad.board);
@@ -338,7 +338,7 @@ Deno.test("toggleFlag - toggle flag", () => {
   assertEquals(game.value.board.at(2)?.at(2)?.status, "hidden");
   assertEquals(game.value.remainingFlags, 2);
 
-  toggleFlag(state, createCoordinate(2, 2));
+  toggleFlag(state, createPoint(2, 2));
   assertEquals(game.value.board.at(2)?.at(2)?.status, "flagged");
   assertEquals(game.value.remainingFlags, 1);
 });
@@ -346,10 +346,10 @@ Deno.test("toggleFlag - toggle flag", () => {
 Deno.test("toggleFlag - untoggle flag", () => {
   const { state, game } = createMinsweeperState();
   startGame(state, createDifficultyLevel(3, 3, 2), 6);
-  toggleFlag(state, createCoordinate(2, 2));
+  toggleFlag(state, createPoint(2, 2));
   assertEquals(game.value.board.at(2)?.at(2)?.status, "flagged");
 
-  toggleFlag(state, createCoordinate(2, 2));
+  toggleFlag(state, createPoint(2, 2));
   assertEquals(game.value.board.at(2)?.at(2)?.status, "hidden");
   assertEquals(game.value.remainingFlags, 2);
 });
@@ -358,10 +358,10 @@ Deno.test("toggleFlag - no change if toggling flag on revealed cell", () => {
   const { state, game } = createMinsweeperState();
 
   startGame(state, createDifficultyLevel(3, 3, 2), 6);
-  revealCell(state, game.value.status, createCoordinate(0, 0));
+  revealCell(state, game.value.status, createPoint(0, 0));
   assertEquals(game.value.board.at(0)?.at(0)?.status, "revealed");
 
-  toggleFlag(state, createCoordinate(0, 0));
+  toggleFlag(state, createPoint(0, 0));
   assertEquals(game.value.board.at(0)?.at(0)?.status, "revealed");
   assertEquals(game.value.remainingFlags, 2);
 });
@@ -370,27 +370,27 @@ Deno.test("toggleFlag - negative flag count", () => {
   const { state, game } = createMinsweeperState();
   startGame(state, createDifficultyLevel(3, 3, 2), 6);
 
-  toggleFlag(state, createCoordinate(2, 0));
+  toggleFlag(state, createPoint(2, 0));
   assertEquals(game.value.cellCounts.flagged, 1);
   assertEquals(game.value.remainingFlags, 1);
 
-  toggleFlag(state, createCoordinate(2, 1));
+  toggleFlag(state, createPoint(2, 1));
   assertEquals(game.value.cellCounts.flagged, 2);
   assertEquals(game.value.remainingFlags, 0);
 
-  toggleFlag(state, createCoordinate(2, 2));
+  toggleFlag(state, createPoint(2, 2));
   assertEquals(game.value.cellCounts.flagged, 3);
   assertEquals(game.value.remainingFlags, -1);
 
-  toggleFlag(state, createCoordinate(2, 2));
+  toggleFlag(state, createPoint(2, 2));
   assertEquals(game.value.cellCounts.flagged, 2);
   assertEquals(game.value.remainingFlags, 0);
 
-  toggleFlag(state, createCoordinate(2, 1));
+  toggleFlag(state, createPoint(2, 1));
   assertEquals(game.value.cellCounts.flagged, 1);
   assertEquals(game.value.remainingFlags, 1);
 
-  toggleFlag(state, createCoordinate(2, 0));
+  toggleFlag(state, createPoint(2, 0));
   assertEquals(game.value.cellCounts.flagged, 0);
   assertEquals(game.value.remainingFlags, 2);
 });

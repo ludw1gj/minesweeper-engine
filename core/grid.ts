@@ -1,7 +1,7 @@
-import { Cell, Coordinate, Grid, RandomNumberGenerator } from "./types.ts";
+import { Cell, Grid, Point, RandomNumberGenerator } from "./types.ts";
 
 /** The change to a coordinate to adjacent cells. */
-const neighbourCellDeltas: ReadonlyArray<Coordinate> = [-1, 0, 1]
+const neighbourCellDeltas: ReadonlyArray<Point> = [-1, 0, 1]
   .flatMap((y) => [-1, 0, 1].map((x) => ({ x, y })))
   .filter(({ x, y }) => !(x === 0 && y === 0));
 
@@ -19,73 +19,125 @@ export function createEmptyBoard(rows: number, cols: number): Grid {
 
 export function buildBoard(
   grid: Grid,
-  mines: number,
+  mineNum: number,
   randSeed: number,
-  coordinate: Coordinate,
+  seedPoint: Point,
 ): Grid {
-  const minedGrid = placeRandonMines(
-    grid,
-    mines,
-    randSeed,
-    coordinate,
+  const randomNumberGenerator = createRandomNumberGenerator(randSeed);
+
+  const minePoints: Point[] = [];
+  while (minePoints.length !== mineNum) {
+    let minePoint: Point | undefined;
+    while (!minePoint) {
+      const gridHeight = grid.length;
+      const gridWidth = grid[0].length;
+      const randPoint = {
+        x: Math.floor(randomNumberGenerator() * gridWidth),
+        y: Math.floor(randomNumberGenerator() * gridHeight),
+      };
+      const isSmallGrid = gridHeight < 4 && gridWidth < 4;
+      const minDistance = isSmallGrid ? 1 : 2;
+      const distance = findPointDistance(seedPoint, randPoint);
+      if (distance < minDistance) {
+        continue;
+      }
+      minePoint = randPoint;
+    }
+
+    const unique = minePoints.findIndex((p) =>
+      p.x === minePoint?.x && p.y === minePoint.y
+    ) === -1;
+    if (unique) {
+      minePoints.push(minePoint);
+    }
+  }
+
+  let minedGrid = grid;
+  const mine: Cell = {
+    status: "hidden",
+    mineCount: -1,
+  };
+  for (const point of minePoints) {
+    minedGrid = minedGrid.with(point.y, grid[point.y].with(point.x, mine));
+  }
+
+  return minedGrid.map((row, y) =>
+    row.map((cell, x) =>
+      cell.mineCount !== -1
+        ? {
+          ...cell,
+          mineCount: neighbourCellDeltas.reduce((total, delta) => {
+            const row = minedGrid[y + delta.y];
+            return row && row[x + delta.x]?.mineCount === -1
+              ? total + 1
+              : total;
+          }, 0),
+        }
+        : cell
+    )
   );
-  const countedGrid = placeNeigbouringMinesCount(minedGrid);
-  return revealCellInGrid(countedGrid, coordinate);
 }
 
 /** Toggle the flag value of cell at the given coordinate. */
 export function toggleFlagInGrid(
   grid: Grid,
-  coordinate: Coordinate,
+  point: Point,
 ): Grid {
-  const cell = getCell(grid, coordinate);
+  const cell = grid[point.y][point.x];
   const canToggle = cell?.status === "hidden" ||
     cell?.status === "flagged";
   return canToggle
-    ? updateCell(grid, coordinate, {
-      ...cell,
-      status: cell.status === "hidden" ? "flagged" : "hidden",
-    })
+    ? grid.with(
+      point.y,
+      grid[point.y].with(point.x, {
+        ...cell,
+        status: cell.status === "hidden" ? "flagged" : "hidden",
+      }),
+    )
     : grid;
 }
 
 /** Make cell revealed at the given coordinate. */
 export function revealCellInGrid(
   grid: Grid,
-  coordinate: Coordinate,
+  point: Point,
 ): Grid {
-  const cell = getCell(grid, coordinate);
+  const cell = grid[point.y] ? grid[point.y][point.x] : undefined;
   if (!cell || cell.status === "revealed") {
     return grid;
   }
 
   const isLoss = cell.mineCount === -1;
   if (isLoss) {
-    return updateEachCell(grid, (col, x, y) =>
-      col.mineCount === -1
-        ? {
-          ...col,
-          status: x === coordinate.x && y === coordinate.y
-            ? "detonated"
-            : "revealed",
-        }
-        : cell);
+    return grid.map((row, y) =>
+      row.map((cell, x) =>
+        cell.mineCount === -1
+          ? {
+            ...cell,
+            status: x === point.x && y === point.y ? "detonated" : "revealed",
+          }
+          : cell
+      )
+    );
   }
 
-  const coorsToReveal = cell.mineCount === 0
-    ? findNeighborsToReveal(grid, coordinate)
+  const pointsToReveal = cell.mineCount === 0
+    ? findNeighborsToReveal(grid, point)
     : undefined;
-  const updatedGrid = coorsToReveal
-    ? updateEachCell(
-      grid,
-      (cell, x, y) =>
+  const updatedGrid = pointsToReveal
+    ? grid.map((row, y) =>
+      row.map((cell, x) =>
         cell.status === "revealed"
           ? cell
-          : coorsToReveal.find((c) => c.x === x && c.y === y)
-          ? { ...cell, status: "revealed" }
-          : cell,
+          : pointsToReveal.find((c) => c.x === x && c.y === y)
+          ? { ...cell, status: "revealed" } as Cell
+          : cell
+      )
     )
-    : updateCell(grid, coordinate, { ...cell, status: "revealed" });
+    : grid.with(
+      point.y,
+      grid[point.y].with(point.x, { ...cell, status: "revealed" } as Cell),
+    );
   const cells = updatedGrid.flat();
   const isGameWin = cells.length === cells
     .reduce(
@@ -93,83 +145,25 @@ export function revealCellInGrid(
       0,
     );
   return isGameWin
-    ? updateEachCell(
-      updatedGrid,
-      (c) =>
+    ? updatedGrid.map((row) =>
+      row.map((c) =>
         c.status !== "revealed"
           ? {
             ...c,
             status: "revealed",
           }
-          : c,
+          : c
+      )
     )
     : updatedGrid;
 }
 
-/**
- * Generate coordinates to place mine cells on a grid. The seed coordinate must be a water cell
- * with an adjacent mines count of 0, and therefore must not be a mine cell.
- */
-function placeRandonMines(
-  grid: Grid,
-  numMines: number,
-  randSeed: number,
-  seedCoordinate: Coordinate,
-): Grid {
-  const randomNumberGenerator = createRandomNumberGenerator(randSeed);
-  const randomCoordinates: Coordinate[] = [];
-  while (randomCoordinates.length !== numMines) {
-    let randCoor: Coordinate | undefined;
-    while (!randCoor) {
-      const gridHeight = grid.length;
-      const gridWidth = grid[0].length;
-      const currRandCoor = {
-        x: Math.floor(randomNumberGenerator() * gridWidth),
-        y: Math.floor(randomNumberGenerator() * gridHeight),
-      };
-      const isSmallGrid = gridHeight < 4 && gridWidth < 4;
-      const minDistance = isSmallGrid ? 1 : 2;
-      const distance = findCoordinateDistance(seedCoordinate, currRandCoor);
-      if (distance < minDistance) {
-        continue;
-      }
-      randCoor = currRandCoor;
-    }
-
-    const unique = !randomCoordinates.find((coor) =>
-      coor.x === randCoor?.x && coor.y === randCoor.y
-    );
-    if (unique) {
-      randomCoordinates.push(randCoor);
-    }
-  }
-
-  return grid.map((row, y) =>
-    row.map((cell, x) =>
-      randomCoordinates.find((coor) => coor.x === x && coor.y === y)
-        ? { ...cell, mineCount: -1 }
-        : cell
-    )
-  );
-}
-
-function placeNeigbouringMinesCount(grid: Grid): Grid {
-  return updateEachCell(grid, (cell, x, y) =>
-    cell.mineCount === -1 ? cell : {
-      ...cell,
-      mineCount: neighbourCellDeltas.reduce((total, delta) =>
-        getCell(grid, { y: y + delta.y, x: x + delta.x })?.mineCount === -1
-          ? total + 1
-          : total, 0),
-    });
-}
-
-function findCoordinateDistance(
-  coordinateA: Coordinate,
-  coordinateB: Coordinate,
+function findPointDistance(
+  pointA: Point,
+  pointB: Point,
 ): number {
-  const distanceX = Math.abs(coordinateB.x - coordinateA.x);
-  const distanceY = Math.abs(coordinateB.y - coordinateA.y);
+  const distanceX = Math.abs(pointB.x - pointA.x);
+  const distanceY = Math.abs(pointB.y - pointA.y);
   const min = Math.min(distanceX, distanceY);
   const max = Math.max(distanceX, distanceY);
   const diagonalSteps = min;
@@ -195,54 +189,39 @@ function createRandomNumberGenerator(
 /** Inclusive of given coordinate */
 function findNeighborsToReveal(
   grid: Grid,
-  coordinate: Coordinate,
-): Coordinate[] {
-  const queue: Coordinate[] = [coordinate];
-  const neighborCoorsToReveal: Coordinate[] = [];
+  point: Point,
+): Point[] {
+  const queue: Point[] = [point];
+  const points: Point[] = [];
 
   while (queue.length) {
-    const coor = queue.shift()!;
-    const cell = getCell(grid, coor);
+    const currPoint = queue.shift()!;
+    const cell = grid[currPoint.y] ? grid[currPoint.y][currPoint.x] : undefined;
     if (
       !cell ||
-      neighborCoorsToReveal.find((c) => c.x === coor.x && c.y === coor.y)
+      points.find((c) => c.x === currPoint.x && c.y === currPoint.y)
     ) {
       continue;
     }
 
-    neighborCoorsToReveal.push(coor);
+    points.push(currPoint);
     if (cell.mineCount !== 0) {
       continue;
     }
 
-    for (const { x, y } of neighbourCellDeltas) {
-      const neighbourCoor = {
-        x: coor.x + x,
-        y: coor.y + y,
+    for (const delta of neighbourCellDeltas) {
+      const adjPoint = {
+        x: currPoint.x + delta.x,
+        y: currPoint.y + delta.y,
       };
-      const neighbourCell = getCell(grid, neighbourCoor);
-      if (!neighbourCell) {
-        continue;
+      const adjCell = grid[adjPoint.y]
+        ? grid[adjPoint.y][adjPoint.x]
+        : undefined;
+      if (adjCell) {
+        queue.push(adjPoint);
       }
-      queue.push(neighbourCoor);
     }
   }
 
-  return neighborCoorsToReveal;
-}
-
-function getCell(grid: Grid, { y, x }: Coordinate) {
-  const row = grid[y];
-  return row ? row[x] : undefined;
-}
-
-function updateCell(grid: Grid, { y, x }: Coordinate, cell: Cell) {
-  return grid.with(y, grid[y].with(x, cell));
-}
-
-function updateEachCell(
-  grid: Grid,
-  fn: (cell: Cell, x: number, y: number) => Cell,
-) {
-  return grid.map((row, y) => row.map((cell, x) => fn(cell, x, y)));
+  return points;
 }

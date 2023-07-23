@@ -1,10 +1,4 @@
-import {
-  Cell,
-  Coordinate,
-  Difficulty,
-  Grid,
-  Minesweeper,
-} from "../core/types.ts";
+import { Cell, Difficulty, Grid, Minesweeper, Point } from "../core/types.ts";
 
 /** Default difficulty levels. */
 export const difficulties = {
@@ -27,7 +21,7 @@ export function createDifficultyLevel(
 }
 
 /** Create a coordinate. */
-export function createCoordinate(x: number, y: number): Coordinate {
+export function createPoint(x: number, y: number): Point {
   return ({
     x,
     y,

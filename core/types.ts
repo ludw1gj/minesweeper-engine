@@ -33,7 +33,7 @@ export type Cell = Readonly<{
 }>;
 
 /** A coordinate of a grid. */
-export type Coordinate = Readonly<{
+export type Point = Readonly<{
   x: number;
   y: number;
 }>;

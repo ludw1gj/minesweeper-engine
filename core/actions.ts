@@ -6,11 +6,11 @@ import {
   toggleFlagInGrid,
 } from "./grid.ts";
 import {
-  Coordinate,
   Difficulty,
   GameStatus,
   Grid,
   MinesweeperState,
+  Point,
 } from "./types.ts";
 
 /** Create a minesweeper game. Game board isn't generated until first move */
@@ -34,34 +34,35 @@ export function startGame(
 export function revealCell(
   game: Signal<MinesweeperState>,
   status: GameStatus,
-  coordinate: Coordinate,
+  point: Point,
 ) {
   const isFirstMove = status === "ready";
   const isPlayableStatus = isFirstMove || status === "running";
-  const row = game.value.board[coordinate.y];
-  const cell = row ? row[coordinate.x] : undefined;
+  const row = game.value.board[point.y];
+  const cell = row ? row[point.x] : undefined;
   if (!cell || cell.status === "revealed" || !isPlayableStatus) {
     return;
   }
   const isLoss = cell.mineCount === -1;
+  const board = isFirstMove
+    ? buildBoard(
+      game.value.board,
+      game.value.difficulty.mines,
+      game.value.randSeed,
+      point,
+    )
+    : game.value.board;
   game.value = {
     ...game.value,
     savedBoard: isLoss ? game.value.board : undefined,
-    board: isFirstMove
-      ? buildBoard(
-        game.value.board,
-        game.value.difficulty.mines,
-        game.value.randSeed,
-        coordinate,
-      )
-      : revealCellInGrid(game.value.board, coordinate),
+    board: revealCellInGrid(board, point),
   };
 }
 
 /** Toggle the flag value of cell at the given coordinate. */
 export function toggleFlag(
   game: Signal<MinesweeperState>,
-  coordinate: Coordinate,
+  coordinate: Point,
 ) {
   game.value = {
     ...game.value,
