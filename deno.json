@@ -2,13 +2,8 @@
   "lint": {
     "include": ["src/"]
   },
-  "fmt": {
-    "lineWidth": 80,
-    "semiColons": false,
-    "singleQuote": true
-  },
-  "compilerOptions": {"noUncheckedIndexedAccess": true},
   "imports": {
+    "$std/": "https://deno.land/std@0.192.0/",
     "preact": "https://esm.sh/preact@10.10.6",
     "preact/": "https://esm.sh/preact@10.10.6/",
     "@preact/signals": "https://esm.sh/*@preact/signals@1.0.3",
