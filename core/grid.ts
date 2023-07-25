@@ -1,17 +1,26 @@
-import { Cell, MutableGrid, Point, RandomNumberGenerator } from "./types.ts";
-
-/** Adjacent deltas of a point. */
-const POINT_DELTAS: ReadonlyArray<Point> = [-1, 0, 1]
-  .flatMap((y) => [-1, 0, 1].map((x) => ({ x, y })))
-  .filter(({ x, y }) => !(x === 0 && y === 0));
+import {
+  CELL_DETONATED,
+  CELL_FLAGGED_MAP,
+  CELL_HIDDEN_MAP,
+  CELL_REVEALED_MAP,
+  POINT_DELTAS,
+} from "./constants.ts";
+import { Grid, MutableGrid, Point, RandomNumberGenerator } from "./types.ts";
 
 /** Generate initial grid of hidden cells. */
 export function generateInitialGrid(rows: number, cols: number): MutableGrid {
-  const cell: Cell = {
-    status: "hidden",
-    mineCount: 0,
-  };
+  const cell = CELL_HIDDEN_MAP.get(0)!;
   return Array.from({ length: rows * cols }, () => cell);
+}
+
+export function countMines(grid: Grid) {
+  let minesAmt = 0;
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i].mineCount === -1) {
+      minesAmt++;
+    }
+  }
+  return minesAmt;
 }
 
 /** Generates random mine points, lays mines, and lays mine counts. */
@@ -24,10 +33,7 @@ export function deployMines(
 ): void {
   const randomNumberGenerator = createRandomNumberGenerator(randSeed);
   const height = grid.length / width;
-  const mine: Cell = {
-    status: "hidden",
-    mineCount: -1,
-  };
+  const mine = CELL_HIDDEN_MAP.get(-1)!;
 
   let layedMines = 0;
   while (layedMines !== mineNum) {
@@ -62,7 +68,8 @@ export function deployMines(
     const y = Math.floor(i / width);
     const x = i % width;
     let mineCount = 0;
-    for (const delta of POINT_DELTAS) {
+    for (let j = 0; j < POINT_DELTAS.length; j++) {
+      const delta = POINT_DELTAS[j];
       const adjY = y + delta.y;
       const adjX = x + delta.x;
       const adjCell = grid[width * adjY + adjX];
@@ -73,7 +80,7 @@ export function deployMines(
     }
 
     if (mineCount > 0) {
-      grid[i] = { ...cell, mineCount };
+      grid[i] = CELL_HIDDEN_MAP.get(mineCount)!;
     }
   }
 }
@@ -91,10 +98,8 @@ export function toggleFlagPoint(
     return;
   }
 
-  grid[width * point.y + point.x] = {
-    ...cell,
-    status: cell.status === "hidden" ? "flagged" : "hidden",
-  };
+  const map = cell.status === "hidden" ? CELL_FLAGGED_MAP : CELL_HIDDEN_MAP;
+  grid[width * point.y + point.x] = map.get(cell.mineCount)!;
 }
 
 /** Reveal cell at the given point. */
@@ -127,17 +132,11 @@ function revealAllPoints(grid: MutableGrid, detonatedIndex?: number): void {
   for (let i = 0; i < grid.length; i++) {
     const cell = grid[i];
     if (i === detonatedIndex) {
-      grid[i] = {
-        ...cell,
-        status: "detonated",
-      };
+      grid[i] = CELL_DETONATED;
       continue;
     }
     if (cell.status !== "revealed") {
-      grid[i] = {
-        ...cell,
-        status: "revealed",
-      };
+      grid[i] = CELL_REVEALED_MAP.get(cell.mineCount)!;
     }
   }
 }
@@ -170,7 +169,8 @@ function revealNeighborPoints(
 
     const y = Math.floor(currIndex / width);
     const x = currIndex % width;
-    for (const delta of POINT_DELTAS) {
+    for (let j = 0; j < POINT_DELTAS.length; j++) {
+      const delta = POINT_DELTAS[j];
       const adjY = y + delta.y;
       const adjX = x + delta.x;
       if (adjY >= width || adjX >= height) {
@@ -184,19 +184,21 @@ function revealNeighborPoints(
     }
   }
 
-  for (const index of adjIndexes) {
-    const cell = grid[index];
+  for (let i = 0; i < adjIndexes.length; i++) {
+    const adjIndex = adjIndexes[i];
+    const cell = grid[adjIndex];
     if (cell.status === "revealed") {
       continue;
     }
-    grid[index] = { ...cell, status: "revealed" };
+    grid[adjIndex] = CELL_REVEALED_MAP.get(cell.mineCount)!;
   }
 }
 
 /** Check if the given grid has been won */
 function checkGridWin(grid: MutableGrid): boolean {
   let mineOrRevealedAmt = 0;
-  for (const cell of grid) {
+  for (let i = 0; i < grid.length; i++) {
+    const cell = grid[i];
     if (cell.status === "revealed" || cell.mineCount === -1) {
       mineOrRevealedAmt++;
     }

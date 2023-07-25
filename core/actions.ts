@@ -1,5 +1,6 @@
 import { Signal } from "@preact/signals";
 import {
+  countMines,
   deployMines,
   generateInitialGrid,
   revealPoint,
@@ -100,10 +101,7 @@ export const loadGame = (
     difficulty: {
       height: Math.floor(grid.length / width),
       width,
-      mines: grid.reduce(
-        (total, cell) => cell.mineCount === -1 ? total + 1 : total,
-        0,
-      ),
+      mines: countMines(grid),
     },
     randSeed,
   };
