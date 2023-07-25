@@ -1,9 +1,9 @@
 import { Signal } from "@preact/signals";
 import {
-  buildBoard,
-  createEmptyBoard,
-  revealCellInGrid,
-  toggleFlagInGrid,
+  deployMines,
+  generateInitialGrid,
+  revealPoint,
+  toggleFlagPoint,
 } from "./grid.ts";
 import {
   Difficulty,
@@ -13,7 +13,7 @@ import {
   Point,
 } from "./types.ts";
 
-/** Create a minesweeper game. Game board isn't generated until first move */
+/** Create a minesweeper game. Mines are not generated until first move. */
 export function startGame(
   game: Signal<MinesweeperState>,
   difficulty: Difficulty,
@@ -21,7 +21,7 @@ export function startGame(
 ) {
   game.value = {
     ...game.value,
-    board: createEmptyBoard(
+    board: generateInitialGrid(
       difficulty.height,
       difficulty.width,
     ),
@@ -30,7 +30,7 @@ export function startGame(
   };
 }
 
-/** Make cell revealed at the given coordinate. */
+/** Reveal cell revealed at the given point. */
 export function revealCell(
   game: Signal<MinesweeperState>,
   status: GameStatus,
@@ -38,39 +38,49 @@ export function revealCell(
 ) {
   const isFirstMove = status === "ready";
   const isPlayableStatus = isFirstMove || status === "running";
-  const row = game.value.board[point.y];
-  const cell = row ? row[point.x] : undefined;
+  const { board, difficulty, randSeed } = game.value;
+  const cell = board[difficulty.width * point.y + point.x];
   if (!cell || cell.status === "revealed" || !isPlayableStatus) {
     return;
   }
+
   const isLoss = cell.mineCount === -1;
-  const board = isFirstMove
-    ? buildBoard(
-      game.value.board,
-      game.value.difficulty.mines,
-      game.value.randSeed,
+  const currBoard = [...board];
+  if (isFirstMove) {
+    deployMines(
+      currBoard,
+      difficulty.mines,
+      randSeed,
+      difficulty.width,
       point,
-    )
-    : game.value.board;
+    );
+  }
+  revealPoint(currBoard, difficulty.width, point);
   game.value = {
     ...game.value,
     savedBoard: isLoss ? game.value.board : undefined,
-    board: revealCellInGrid(board, point),
+    board: currBoard,
   };
 }
 
-/** Toggle the flag value of cell at the given coordinate. */
+/** Toggle the flag value of cell at the given point. */
 export function toggleFlag(
   game: Signal<MinesweeperState>,
-  coordinate: Point,
+  point: Point,
 ) {
+  const currBoard = [...game.value.board];
+  toggleFlagPoint(
+    currBoard,
+    game.value.difficulty.width,
+    point,
+  );
   game.value = {
     ...game.value,
-    board: toggleFlagInGrid(game.value.board, coordinate),
+    board: currBoard,
   };
 }
 
-/** Load the previous state. */
+/** Load the previous board state. */
 export function undoLoosingMove(game: Signal<MinesweeperState>) {
   if (!game.value.savedBoard) {
     return;
@@ -81,15 +91,16 @@ export function undoLoosingMove(game: Signal<MinesweeperState>) {
 export const loadGame = (
   game: Signal<MinesweeperState>,
   grid: Grid,
+  width: number,
   randSeed: number,
 ) => {
   game.value = {
     ...game.value,
     board: grid,
     difficulty: {
-      height: grid.length,
-      width: grid[0].length,
-      mines: grid.flat().reduce(
+      height: Math.floor(grid.length / width),
+      width,
+      mines: grid.reduce(
         (total, cell) => cell.mineCount === -1 ? total + 1 : total,
         0,
       ),
@@ -100,7 +111,7 @@ export const loadGame = (
 
 export function reset(game: Signal<MinesweeperState>) {
   game.value = {
-    board: [[]],
+    board: [],
     difficulty: {
       height: 0,
       width: 0,

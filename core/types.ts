@@ -32,7 +32,7 @@ export type Cell = Readonly<{
   mineCount: number;
 }>;
 
-/** A coordinate of a grid. */
+/** An x-y point of a grid. */
 export type Point = Readonly<{
   x: number;
   y: number;
@@ -48,8 +48,10 @@ export type Difficulty = Readonly<{
 /** The current status of the game. */
 export type GameStatus = "waiting" | "ready" | "running" | "loss" | "win";
 
+export type MutableGrid = Cell[];
+
 /** A grid made up of cells. */
-export type Grid = ReadonlyArray<ReadonlyArray<Cell>>;
+export type Grid = Readonly<MutableGrid>;
 
 /** Generates a random number from a seed number. */
 export type RandomNumberGenerator = (max?: number, min?: number) => number;

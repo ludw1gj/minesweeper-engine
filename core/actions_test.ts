@@ -22,49 +22,44 @@ const finalWaterCellGameState = (): Minesweeper => {
   return {
     difficulty: createDifficultyLevel(height, width, numMines),
     board: [
-      [
-        {
-          status: "revealed",
-          mineCount: 0,
-        },
-        {
-          status: "revealed",
-          mineCount: 1,
-        },
-        {
-          status: "revealed",
-          mineCount: 1,
-        },
-      ],
-      [
-        {
-          status: "revealed",
-          mineCount: 1,
-        },
-        {
-          status: "revealed",
-          mineCount: 3,
-        },
-        {
-          status: "flagged",
-          mineCount: -1,
-        },
-      ],
+      {
+        status: "revealed",
+        mineCount: 0,
+      },
+      {
+        status: "revealed",
+        mineCount: 1,
+      },
+      {
+        status: "revealed",
+        mineCount: 1,
+      },
+
+      {
+        status: "revealed",
+        mineCount: 1,
+      },
+      {
+        status: "revealed",
+        mineCount: 3,
+      },
+      {
+        status: "flagged",
+        mineCount: -1,
+      },
       // REVEAL THIS CELL
-      [
-        {
-          status: "hidden",
-          mineCount: 1,
-        },
-        {
-          status: "flagged",
-          mineCount: -1,
-        },
-        {
-          status: "hidden",
-          mineCount: -1,
-        },
-      ],
+      {
+        status: "hidden",
+        mineCount: 1,
+      },
+      {
+        status: "flagged",
+        mineCount: -1,
+      },
+      {
+        status: "hidden",
+        mineCount: -1,
+      },
     ],
     status: "running",
     randSeed: 6,
@@ -95,26 +90,23 @@ Deno.test("startGame - start correctly", () => {
       total: height * width,
     },
     board: [
-      [
-        {
-          status: "hidden",
-          mineCount: 0,
-        },
-        {
-          status: "hidden",
-          mineCount: 0,
-        },
-      ],
-      [
-        {
-          status: "hidden",
-          mineCount: 0,
-        },
-        {
-          status: "hidden",
-          mineCount: 0,
-        },
-      ],
+      {
+        status: "hidden",
+        mineCount: 0,
+      },
+      {
+        status: "hidden",
+        mineCount: 0,
+      },
+
+      {
+        status: "hidden",
+        mineCount: 0,
+      },
+      {
+        status: "hidden",
+        mineCount: 0,
+      },
     ],
     status: "ready",
     randSeed: 6,
@@ -162,7 +154,12 @@ Deno.test(
 Deno.test("loadGame - successfully load previous game", () => {
   const { state, game } = createMinsweeperState();
   const previousGame = finalWaterCellGameState();
-  loadGame(state, previousGame.board, previousGame.randSeed);
+  loadGame(
+    state,
+    previousGame.board,
+    previousGame.difficulty.width,
+    previousGame.randSeed,
+  );
   assertEquals(game.value, previousGame);
 });
 
@@ -181,78 +178,74 @@ Deno.test("revealCell - reveal empty adjacent cells", () => {
   const desiredState: Minesweeper = {
     difficulty: createDifficultyLevel(height, width, numMines),
     board: [
-      [
-        {
-          status: "hidden",
-          mineCount: 1,
-        },
-        {
-          status: "hidden",
-          mineCount: -1,
-        },
-        {
-          status: "revealed",
-          mineCount: 1,
-        },
-        {
-          status: "revealed",
-          mineCount: 0,
-        },
-      ],
-      [
-        {
-          status: "hidden",
-          mineCount: 2,
-        },
-        {
-          status: "hidden",
-          mineCount: 2,
-        },
-        {
-          status: "revealed",
-          mineCount: 2,
-        },
-        {
-          status: "revealed",
-          mineCount: 0,
-        },
-      ],
-      [
-        {
-          status: "hidden",
-          mineCount: 1,
-        },
-        {
-          status: "hidden",
-          mineCount: -1,
-        },
-        {
-          status: "revealed",
-          mineCount: 1,
-        },
-        {
-          status: "revealed",
-          mineCount: 0,
-        },
-      ],
-      [
-        {
-          status: "hidden",
-          mineCount: 1,
-        },
-        {
-          status: "hidden",
-          mineCount: 1,
-        },
-        {
-          status: "revealed",
-          mineCount: 1,
-        },
-        {
-          status: "revealed",
-          mineCount: 0,
-        },
-      ],
+      // --- 0
+      {
+        status: "hidden",
+        mineCount: 1,
+      },
+      {
+        status: "hidden",
+        mineCount: -1,
+      },
+      {
+        status: "revealed",
+        mineCount: 1,
+      },
+      {
+        status: "revealed",
+        mineCount: 0,
+      },
+      // --- 1
+      {
+        status: "hidden",
+        mineCount: 2,
+      },
+      {
+        status: "hidden",
+        mineCount: 2,
+      },
+      {
+        status: "revealed",
+        mineCount: 2,
+      },
+      {
+        status: "revealed",
+        mineCount: 0,
+      },
+      // --- 2
+      {
+        status: "hidden",
+        mineCount: 1,
+      },
+      {
+        status: "hidden",
+        mineCount: -1,
+      },
+      {
+        status: "revealed",
+        mineCount: 1,
+      },
+      {
+        status: "revealed",
+        mineCount: 0,
+      },
+      // --- 3
+      {
+        status: "hidden",
+        mineCount: 1,
+      },
+      {
+        status: "hidden",
+        mineCount: 1,
+      },
+      {
+        status: "revealed",
+        mineCount: 1,
+      },
+      {
+        status: "revealed",
+        mineCount: 0,
+      },
     ],
     cellCounts: {
       revealed: 8,
@@ -287,8 +280,11 @@ Deno.test(
 Deno.test("revealCell - game is lost", () => {
   const { state, game } = createMinsweeperState();
   const gameLoad = finalWaterCellGameState();
-  loadGame(state, gameLoad.board, gameLoad.randSeed);
-  assertEquals(game.value.board[2][2].mineCount, -1);
+  loadGame(state, gameLoad.board, gameLoad.difficulty.width, gameLoad.randSeed);
+  assertEquals(
+    game.value.board[gameLoad.difficulty.width * 2 + 2].mineCount,
+    -1,
+  );
   revealCell(state, game.value.status, createPoint(2, 2));
 
   assertEquals(game.value.status, "loss");
@@ -300,18 +296,18 @@ Deno.test("revealCell - flag count when revealing a flagged cell", () => {
   const { state, game } = createMinsweeperState();
   startGame(state, createDifficultyLevel(3, 3, 2), 6);
   toggleFlag(state, createPoint(0, 0));
-  assertEquals(game.value.board.at(0)?.at(0)?.status, "flagged");
+  assertEquals(game.value.board.at(0)?.status, "flagged");
   assertEquals(game.value.remainingFlags, 1);
 
   revealCell(state, game.value.status, createPoint(0, 0));
-  assertEquals(game.value.board.at(0)?.at(0)?.status, "revealed");
+  assertEquals(game.value.board.at(0)?.status, "revealed");
   assertEquals(game.value.remainingFlags, 2);
 });
 
 Deno.test("revealCell - game win", () => {
   const { state, game } = createMinsweeperState();
   const gameLoad = finalWaterCellGameState();
-  loadGame(state, gameLoad.board, gameLoad.randSeed);
+  loadGame(state, gameLoad.board, gameLoad.difficulty.width, gameLoad.randSeed);
   revealCell(state, game.value.status, createPoint(0, 2));
 
   assertEquals(game.value.status, "win");
@@ -325,7 +321,7 @@ Deno.test("revealCell - game win", () => {
 Deno.test("undoLoosingMove - undo lossing move", () => {
   const { state, game } = createMinsweeperState();
   const gameLoad = finalWaterCellGameState();
-  loadGame(state, gameLoad.board, gameLoad.randSeed);
+  loadGame(state, gameLoad.board, gameLoad.difficulty.width, gameLoad.randSeed);
   revealCell(state, game.value.status, createPoint(2, 2));
   undoLoosingMove(state);
   assertEquals(game.value.status, "running");
@@ -335,11 +331,17 @@ Deno.test("undoLoosingMove - undo lossing move", () => {
 Deno.test("toggleFlag - toggle flag", () => {
   const { state, game } = createMinsweeperState();
   startGame(state, createDifficultyLevel(3, 3, 2), 6);
-  assertEquals(game.value.board.at(2)?.at(2)?.status, "hidden");
+  assertEquals(
+    game.value.board.at(game.value.difficulty.width * 2 + 2)?.status,
+    "hidden",
+  );
   assertEquals(game.value.remainingFlags, 2);
 
   toggleFlag(state, createPoint(2, 2));
-  assertEquals(game.value.board.at(2)?.at(2)?.status, "flagged");
+  assertEquals(
+    game.value.board.at(game.value.difficulty.width * 2 + 2)?.status,
+    "flagged",
+  );
   assertEquals(game.value.remainingFlags, 1);
 });
 
@@ -347,10 +349,16 @@ Deno.test("toggleFlag - untoggle flag", () => {
   const { state, game } = createMinsweeperState();
   startGame(state, createDifficultyLevel(3, 3, 2), 6);
   toggleFlag(state, createPoint(2, 2));
-  assertEquals(game.value.board.at(2)?.at(2)?.status, "flagged");
+  assertEquals(
+    game.value.board.at(game.value.difficulty.width * 2 + 2)?.status,
+    "flagged",
+  );
 
   toggleFlag(state, createPoint(2, 2));
-  assertEquals(game.value.board.at(2)?.at(2)?.status, "hidden");
+  assertEquals(
+    game.value.board.at(game.value.difficulty.width * 2 + 2)?.status,
+    "hidden",
+  );
   assertEquals(game.value.remainingFlags, 2);
 });
 
@@ -359,10 +367,10 @@ Deno.test("toggleFlag - no change if toggling flag on revealed cell", () => {
 
   startGame(state, createDifficultyLevel(3, 3, 2), 6);
   revealCell(state, game.value.status, createPoint(0, 0));
-  assertEquals(game.value.board.at(0)?.at(0)?.status, "revealed");
+  assertEquals(game.value.board.at(0)?.status, "revealed");
 
   toggleFlag(state, createPoint(0, 0));
-  assertEquals(game.value.board.at(0)?.at(0)?.status, "revealed");
+  assertEquals(game.value.board.at(0)?.status, "revealed");
   assertEquals(game.value.remainingFlags, 2);
 });
 

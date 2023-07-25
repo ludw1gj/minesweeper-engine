@@ -8,7 +8,7 @@ export function createMinsweeperState() {
       width: 0,
       mines: 0,
     },
-    board: [[]],
+    board: [],
     savedBoard: undefined,
     randSeed: 1,
   });
@@ -36,19 +36,17 @@ export function createMinsweeperState() {
 
 function countCells(board: Grid) {
   const count = { revealed: 0, flagged: 0, detonated: 0, total: 0 };
-  for (const row of board) {
-    for (const cell of row) {
-      if (cell.status === "revealed") {
-        count.revealed++;
-      }
-      if (cell.status === "flagged") {
-        count.flagged++;
-      }
-      if (cell.status === "detonated") {
-        count.detonated++;
-      }
-      count.total++;
+  for (const cell of board) {
+    if (cell.status === "revealed") {
+      count.revealed++;
     }
+    if (cell.status === "flagged") {
+      count.flagged++;
+    }
+    if (cell.status === "detonated") {
+      count.detonated++;
+    }
+    count.total++;
   }
   return count;
 }

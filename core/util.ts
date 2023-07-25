@@ -33,12 +33,16 @@ export function getStringifiedGrid(
   game: Minesweeper,
   showAllCells: boolean,
 ): string {
-  return gridToString(game.board, showAllCells);
+  return gridToString(game.board, game.difficulty.width, showAllCells);
 }
 
 /** Generate a string representation of the grid. */
-function gridToString(grid: Grid, showAllCells: boolean): string {
-  const outerLine = "---".repeat(grid[0]?.length || 0) + "\n";
+function gridToString(
+  grid: Grid,
+  width: number,
+  showAllCells: boolean,
+): string {
+  const outerLine = "---".repeat(grid.length || 0) + "\n";
 
   const generateCellStr = (cell: Cell): string => {
     if (showAllCells) {
@@ -60,13 +64,16 @@ function gridToString(grid: Grid, showAllCells: boolean): string {
   };
 
   let gridStr = "";
-  for (const row of grid) {
-    gridStr += "|";
-    for (const [index, col] of row.entries()) {
-      const cellStr = generateCellStr(col);
-      gridStr += index === 0 ? cellStr : `, ${cellStr}`;
+  for (const [index, cell] of grid.entries()) {
+    if (index === 0 || index % width === 0) {
+      gridStr += "|";
     }
-    gridStr += "|\n";
+    const cellStr = generateCellStr(cell);
+    gridStr += index === 0 ? cellStr : `, ${cellStr}`;
+
+    if (index !== 0 && index % width === width - 1) {
+      gridStr += "|\n";
+    }
   }
   return outerLine + gridStr + outerLine;
 }
