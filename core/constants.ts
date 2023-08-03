@@ -8,7 +8,7 @@ export const CELL_FLAGGED_MAP = createCellMap("flagged");
 
 export const CELL_DETONATED: Cell = {
   status: "detonated",
-  mineCount: -1,
+  mines: -1,
 };
 
 /** Adjacent deltas of a point. */
@@ -22,7 +22,7 @@ function createCellMap(status: CellStatus): ReadonlyMap<number, Cell> {
   for (let i = -1; i <= maxMineCount; i++) {
     map.set(i, {
       status,
-      mineCount: i,
+      mines: i,
     });
   }
   return map;

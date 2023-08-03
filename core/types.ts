@@ -29,7 +29,7 @@ export type Cell = Readonly<{
   /** The status of the cell. */
   status: CellStatus;
   /** The amount of adjacent mines surrounding the cell. Is `-1` if cell is a mine. */
-  mineCount: number;
+  mines: number;
 }>;
 
 /** An x-y point of a grid. */

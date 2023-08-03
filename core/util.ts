@@ -46,7 +46,7 @@ function gridToString(
 
   const generateCellStr = (cell: Cell): string => {
     if (showAllCells) {
-      return cell.mineCount === -1 ? "💣" : `${cell.mineCount}`;
+      return cell.mines === -1 ? "💣" : `${cell.mines}`;
     }
     switch (cell.status) {
       case "hidden":
@@ -54,10 +54,10 @@ function gridToString(
       case "flagged":
         return "🚩";
       case "revealed":
-        if (cell.mineCount === -1) {
+        if (cell.mines === -1) {
           return "💣";
         }
-        return cell.mineCount > 0 ? `${cell.mineCount}` : "🌊";
+        return cell.mines > 0 ? `${cell.mines}` : "🌊";
       case "detonated":
         return "💥";
     }

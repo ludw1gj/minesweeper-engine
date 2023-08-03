@@ -16,7 +16,7 @@ export function generateInitialGrid(rows: number, cols: number): MutableGrid {
 export function countMines(grid: Grid) {
   let minesAmt = 0;
   for (let i = 0; i < grid.length; i++) {
-    if (grid[i].mineCount === -1) {
+    if (grid[i].mines === -1) {
       minesAmt++;
     }
   }
@@ -26,17 +26,17 @@ export function countMines(grid: Grid) {
 /** Generates random mine points, lays mines, and lays mine counts. */
 export function deployMines(
   grid: MutableGrid,
-  mineNum: number,
-  randSeed: number,
   width: number,
   seedPoint: Point,
+  mineAmt: number,
+  randSeed: number,
 ): void {
   const randomNumberGenerator = createRandomNumberGenerator(randSeed);
   const height = grid.length / width;
   const mine = CELL_HIDDEN_MAP.get(-1)!;
 
   let layedMines = 0;
-  while (layedMines !== mineNum) {
+  while (layedMines !== mineAmt) {
     let mineIndex: number | undefined;
     while (!mineIndex) {
       const randPoint = {
@@ -52,7 +52,7 @@ export function deployMines(
       mineIndex = width * randPoint.y + randPoint.x;
     }
 
-    const canLay = grid[mineIndex].mineCount !== -1;
+    const canLay = grid[mineIndex].mines !== -1;
     if (canLay) {
       grid[mineIndex] = mine;
       layedMines++;
@@ -61,26 +61,26 @@ export function deployMines(
 
   for (let i = 0; i < grid.length; i++) {
     const cell = grid[i];
-    if (cell.mineCount === -1) {
+    if (cell.mines === -1) {
       continue;
     }
 
+    let adjMines = 0;
     const y = Math.floor(i / width);
     const x = i % width;
-    let mineCount = 0;
     for (let j = 0; j < POINT_DELTAS.length; j++) {
       const delta = POINT_DELTAS[j];
       const adjY = y + delta.y;
       const adjX = x + delta.x;
       const adjCell = grid[width * adjY + adjX];
-      if (adjY >= width || adjX >= height || adjCell?.mineCount !== -1) {
+      if (adjY >= width || adjX >= height || adjCell?.mines !== -1) {
         continue;
       }
-      mineCount++;
+      adjMines++;
     }
 
-    if (mineCount > 0) {
-      grid[i] = CELL_HIDDEN_MAP.get(mineCount)!;
+    if (adjMines > 0) {
+      grid[i] = CELL_HIDDEN_MAP.get(adjMines)!;
     }
   }
 }
@@ -99,7 +99,7 @@ export function toggleFlagPoint(
   }
 
   const map = cell.status === "hidden" ? CELL_FLAGGED_MAP : CELL_HIDDEN_MAP;
-  grid[width * point.y + point.x] = map.get(cell.mineCount)!;
+  grid[width * point.y + point.x] = map.get(cell.mines)!;
 }
 
 /** Reveal cell at the given point. */
@@ -114,7 +114,7 @@ export function revealPoint(
     return;
   }
 
-  const isLoss = cell.mineCount === -1;
+  const isLoss = cell.mines === -1;
   if (isLoss) {
     revealAllPoints(grid, cellIndex);
     return;
@@ -136,7 +136,7 @@ function revealAllPoints(grid: MutableGrid, detonatedIndex?: number): void {
       continue;
     }
     if (cell.status !== "revealed") {
-      grid[i] = CELL_REVEALED_MAP.get(cell.mineCount)!;
+      grid[i] = CELL_REVEALED_MAP.get(cell.mines)!;
     }
   }
 }
@@ -163,7 +163,7 @@ function revealNeighborPoints(
     }
 
     adjIndexes.push(currIndex);
-    if (cell.mineCount !== 0) {
+    if (cell.mines !== 0) {
       continue;
     }
 
@@ -178,9 +178,10 @@ function revealNeighborPoints(
       }
       const adjIndex = width * adjY + adjX;
       const adjCell = grid[adjIndex];
-      if (adjCell) {
-        queue.push(adjIndex);
+      if (!adjCell) {
+        continue;
       }
+      queue.push(adjIndex);
     }
   }
 
@@ -190,7 +191,7 @@ function revealNeighborPoints(
     if (cell.status === "revealed") {
       continue;
     }
-    grid[adjIndex] = CELL_REVEALED_MAP.get(cell.mineCount)!;
+    grid[adjIndex] = CELL_REVEALED_MAP.get(cell.mines)!;
   }
 }
 
@@ -199,7 +200,7 @@ function checkGridWin(grid: MutableGrid): boolean {
   let mineOrRevealedAmt = 0;
   for (let i = 0; i < grid.length; i++) {
     const cell = grid[i];
-    if (cell.status === "revealed" || cell.mineCount === -1) {
+    if (cell.mines === -1 || cell.status === "revealed") {
       mineOrRevealedAmt++;
     }
   }
@@ -224,9 +225,7 @@ function findPointDistance(
 function createRandomNumberGenerator(
   seed: number,
 ): RandomNumberGenerator {
-  if (seed === 0) {
-    console.warn("seed cannot be 0, defaulting to 1");
-  }
+  console.assert(seed === 0, "seed cannot be 0, defaulting to 1");
   let seedDecendent = seed || 1;
   return (max = 1, min = 0) => {
     seedDecendent = (seedDecendent * 9301 + 49297) % 233280;

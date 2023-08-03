@@ -45,15 +45,15 @@ export function revealCell(
     return;
   }
 
-  const isLoss = cell.mineCount === -1;
+  const isLoss = cell.mines === -1;
   const currBoard = [...board];
   if (isFirstMove) {
     deployMines(
       currBoard,
-      difficulty.mines,
-      randSeed,
       difficulty.width,
       point,
+      difficulty.mines,
+      randSeed,
     );
   }
   revealPoint(currBoard, difficulty.width, point);

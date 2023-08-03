@@ -24,41 +24,41 @@ const finalWaterCellGameState = (): Minesweeper => {
     board: [
       {
         status: "revealed",
-        mineCount: 0,
+        mines: 0,
       },
       {
         status: "revealed",
-        mineCount: 1,
+        mines: 1,
       },
       {
         status: "revealed",
-        mineCount: 1,
+        mines: 1,
       },
 
       {
         status: "revealed",
-        mineCount: 1,
+        mines: 1,
       },
       {
         status: "revealed",
-        mineCount: 3,
+        mines: 3,
       },
       {
         status: "flagged",
-        mineCount: -1,
+        mines: -1,
       },
       // REVEAL THIS CELL
       {
         status: "hidden",
-        mineCount: 1,
+        mines: 1,
       },
       {
         status: "flagged",
-        mineCount: -1,
+        mines: -1,
       },
       {
         status: "hidden",
-        mineCount: -1,
+        mines: -1,
       },
     ],
     status: "running",
@@ -92,20 +92,20 @@ Deno.test("startGame - start correctly", () => {
     board: [
       {
         status: "hidden",
-        mineCount: 0,
+        mines: 0,
       },
       {
         status: "hidden",
-        mineCount: 0,
+        mines: 0,
       },
 
       {
         status: "hidden",
-        mineCount: 0,
+        mines: 0,
       },
       {
         status: "hidden",
-        mineCount: 0,
+        mines: 0,
       },
     ],
     status: "ready",
@@ -181,70 +181,70 @@ Deno.test("revealCell - reveal empty adjacent cells", () => {
       // --- 0
       {
         status: "hidden",
-        mineCount: 1,
+        mines: 1,
       },
       {
         status: "hidden",
-        mineCount: -1,
+        mines: -1,
       },
       {
         status: "revealed",
-        mineCount: 1,
+        mines: 1,
       },
       {
         status: "revealed",
-        mineCount: 0,
+        mines: 0,
       },
       // --- 1
       {
         status: "hidden",
-        mineCount: 2,
+        mines: 2,
       },
       {
         status: "hidden",
-        mineCount: 2,
+        mines: 2,
       },
       {
         status: "revealed",
-        mineCount: 2,
+        mines: 2,
       },
       {
         status: "revealed",
-        mineCount: 0,
+        mines: 0,
       },
       // --- 2
       {
         status: "hidden",
-        mineCount: 1,
+        mines: 1,
       },
       {
         status: "hidden",
-        mineCount: -1,
+        mines: -1,
       },
       {
         status: "revealed",
-        mineCount: 1,
+        mines: 1,
       },
       {
         status: "revealed",
-        mineCount: 0,
+        mines: 0,
       },
       // --- 3
       {
         status: "hidden",
-        mineCount: 1,
+        mines: 1,
       },
       {
         status: "hidden",
-        mineCount: 1,
+        mines: 1,
       },
       {
         status: "revealed",
-        mineCount: 1,
+        mines: 1,
       },
       {
         status: "revealed",
-        mineCount: 0,
+        mines: 0,
       },
     ],
     cellCounts: {
@@ -282,7 +282,7 @@ Deno.test("revealCell - game is lost", () => {
   const gameLoad = finalWaterCellGameState();
   loadGame(state, gameLoad.board, gameLoad.difficulty.width, gameLoad.randSeed);
   assertEquals(
-    game.value.board[gameLoad.difficulty.width * 2 + 2].mineCount,
+    game.value.board[gameLoad.difficulty.width * 2 + 2].mines,
     -1,
   );
   revealCell(state, game.value.status, createPoint(2, 2));

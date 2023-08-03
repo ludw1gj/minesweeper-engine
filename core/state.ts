@@ -34,9 +34,10 @@ export function createMinsweeperState() {
   return { state, game };
 }
 
-function countCells(board: Grid) {
+function countCells(grid: Grid) {
   const count = { revealed: 0, flagged: 0, detonated: 0, total: 0 };
-  for (const cell of board) {
+  for (let i = 0; i < grid.length; i++) {
+    const cell = grid[i];
     if (cell.status === "revealed") {
       count.revealed++;
     }
